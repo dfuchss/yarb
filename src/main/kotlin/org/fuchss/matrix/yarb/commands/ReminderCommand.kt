@@ -14,6 +14,7 @@ import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
 import net.folivo.trixnity.core.model.events.senderOrNull
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.command.Command
+import org.fuchss.matrix.bots.markdown
 import org.fuchss.matrix.yarb.Config
 import org.fuchss.matrix.yarb.TimerManager
 import org.fuchss.matrix.yarb.getMessageId
@@ -85,7 +86,7 @@ class ReminderCommand(
 
                 val header = "I'll remind all people at $time.${if (emojiToMessage.size > 1) "\n\n" else " "}"
                 val options = emojiToMessage.map { (emoji, message) -> "Use '$emoji' for $message" }.joinToString("\n")
-                text(body = header + options, format = "m.text")
+                markdown(header + options)
             }
         logger.debug("Bot Message TransactionId: {}", botMessageTransactionId)
         val botMessageId = matrixBot.room().getMessageId(roomId, botMessageTransactionId)
