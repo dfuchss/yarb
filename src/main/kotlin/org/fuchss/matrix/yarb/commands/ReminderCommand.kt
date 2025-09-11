@@ -134,7 +134,7 @@ class ReminderCommand(
         }
 
         val header = "I'll remind all people at $time.\n\n"
-        val options = emojiToMessage.map { (emoji, message) -> "Use '$emoji': $message" }.joinToString("\n")
+        val options = emojiToMessage.map { (emoji, message) -> "* Use '$emoji': $message" }.joinToString("\n")
         return header + options
     }
 
