@@ -106,20 +106,31 @@ class TimerManager(
                 return
             }
 
-            val maxReactions = emojiCount.values.max()
-
             matrixBot.room().sendMessage(timer.roomId()) {
                 reply(timer.botMessageId(), null)
                 mentions(remainingReactions.toSet())
-                markdown(
-                    "${emojiCount.filter {it.value >= maxReactions }.map { "* " + timer.emojiToMessage[it.key] }.joinToString(
-                        "\n"
-                    )}\n\n${remainingReactions.joinToString(", ") { it.matrixTo() }}"
-                )
+                val message = createReminderMessage(timer, remainingReactions, emojiCount)
+                markdown(message)
             }
         } catch (e: Exception) {
             logger.error("Error during remind: ${e.message}", e)
         }
+    }
+
+    private fun createReminderMessage(
+        timer: TimerData,
+        remainingReactions: List<UserId>,
+        emojiCount: Map<String, Int>
+    ): String {
+        val maxReactions = emojiCount.values.max()
+
+        val mentions = remainingReactions.joinToString(", ") { it.matrixTo() }
+        val messages = emojiCount.filter { it.value == maxReactions }.map { timer.emojiToMessage[it.key] }
+        if (messages.size == 1) {
+            return "$mentions : '${messages.first()}'"
+        }
+
+        return messages.joinToString("\n") { "* $it" } + "\n\n$mentions"
     }
 
     /**
