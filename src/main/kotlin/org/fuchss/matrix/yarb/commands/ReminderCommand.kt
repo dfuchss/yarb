@@ -83,10 +83,8 @@ class ReminderCommand(
         val botMessageTransactionId =
             matrixBot.room().sendMessage(roomId) {
                 reply(initialMessageEventId, null)
-
-                val header = "I'll remind all people at $time.${if (emojiToMessage.size > 1) "\n\n" else " "}"
-                val options = emojiToMessage.map { (emoji, message) -> "Use '$emoji' for $message" }.joinToString("\n")
-                markdown(header + options)
+                val message = createReminderMessage(time, emojiToMessage)
+                markdown(message)
             }
         logger.debug("Bot Message TransactionId: {}", botMessageTransactionId)
         val botMessageId = matrixBot.room().getMessageId(roomId, botMessageTransactionId)
@@ -125,6 +123,19 @@ class ReminderCommand(
                 emojiToMessage
             )
         timerManager.addTimer(timer)
+    }
+
+    private fun createReminderMessage(
+        time: LocalTime,
+        emojiToMessage: Map<String, String>
+    ): String {
+        if (emojiToMessage.size == 1) {
+            return "I'll remind all people that react '${TimerManager.DEFAULT_REACTION}' at $time: '${emojiToMessage.values.first()}'"
+        }
+
+        val header = "I'll remind all people at $time.\n\n"
+        val options = emojiToMessage.map { (emoji, message) -> "Use '$emoji': $message" }.joinToString("\n")
+        return header + options
     }
 
     private fun parseEmojiToMessage(content: String): Map<String, String> {
