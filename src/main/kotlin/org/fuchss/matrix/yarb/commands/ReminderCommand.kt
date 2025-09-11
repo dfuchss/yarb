@@ -85,7 +85,7 @@ class ReminderCommand(
 
                 val header = "I'll remind all people at $time.${if (emojiToMessage.size > 1) "\n\n" else " "}"
                 val options = emojiToMessage.map { (emoji, message) -> "Use '$emoji' for $message" }.joinToString("\n")
-                text(header + options)
+                text(body = header + options, format = "m.text")
             }
         logger.debug("Bot Message TransactionId: {}", botMessageTransactionId)
         val botMessageId = matrixBot.room().getMessageId(roomId, botMessageTransactionId)
