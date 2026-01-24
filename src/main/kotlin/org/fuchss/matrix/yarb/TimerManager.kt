@@ -6,15 +6,15 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import de.connect2x.trixnity.client.room.getTimelineEventReactionAggregation
+import de.connect2x.trixnity.client.room.message.mentions
+import de.connect2x.trixnity.client.room.message.reply
+import de.connect2x.trixnity.client.store.sender
+import de.connect2x.trixnity.core.model.EventId
+import de.connect2x.trixnity.core.model.RoomId
+import de.connect2x.trixnity.core.model.UserId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import net.folivo.trixnity.client.room.getTimelineEventReactionAggregation
-import net.folivo.trixnity.client.room.message.mentions
-import net.folivo.trixnity.client.room.message.reply
-import net.folivo.trixnity.client.store.sender
-import net.folivo.trixnity.core.model.EventId
-import net.folivo.trixnity.core.model.RoomId
-import net.folivo.trixnity.core.model.UserId
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.emoji
 import org.fuchss.matrix.bots.markdown
@@ -162,31 +162,33 @@ class TimerManager(
     }
 
     data class TimerData(
-        @JsonProperty val roomId: String,
-        @JsonProperty val originalRequestMessage: String,
-        @JsonProperty val currentRequestMessage: String,
-        @JsonProperty val timeToRemind: LocalTime,
-        @JsonProperty val botMessageId: String,
-        @JsonProperty val botReactionMessageIds: List<String>,
-        @JsonProperty val emojiToMessage: Map<String, String>
+        @param:JsonProperty val roomId: String,
+        @param:JsonProperty val originalRequestMessage: String,
+        @param:JsonProperty val currentRequestMessage: String,
+        @param:JsonProperty val timeToRemind: LocalTime,
+        @param:JsonProperty val botMessageId: String,
+        @param:JsonProperty val botReactionMessageIds: List<String>,
+        @param:JsonProperty val emojiToMessage: Map<String, String>
     ) {
-        constructor(
-            roomId: RoomId,
-            originalRequestMessage: EventId,
-            currentRequestMessage: EventId,
-            timeToRemind: LocalTime,
-            botMessageId: EventId,
-            botReactionMessageIds: List<EventId>,
-            emojiToMessage: Map<String, String>
-        ) : this(
-            roomId.full,
-            originalRequestMessage.full,
-            currentRequestMessage.full,
-            timeToRemind,
-            botMessageId.full,
-            botReactionMessageIds.map { it.full },
-            emojiToMessage
-        )
+        companion object {
+            fun create(
+                roomId: RoomId,
+                originalRequestMessage: EventId,
+                currentRequestMessage: EventId,
+                timeToRemind: LocalTime,
+                botMessageId: EventId,
+                botReactionMessageIds: List<EventId>,
+                emojiToMessage: Map<String, String>
+            ) = TimerData(
+                roomId.full,
+                originalRequestMessage.full,
+                currentRequestMessage.full,
+                timeToRemind,
+                botMessageId.full,
+                botReactionMessageIds.map { it.full },
+                emojiToMessage
+            )
+        }
 
         fun roomId() = RoomId(roomId)
 

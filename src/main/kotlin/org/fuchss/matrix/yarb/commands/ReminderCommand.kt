@@ -1,17 +1,17 @@
 package org.fuchss.matrix.yarb.commands
 
-import net.folivo.trixnity.client.room.message.react
-import net.folivo.trixnity.client.room.message.reply
-import net.folivo.trixnity.client.room.message.text
-import net.folivo.trixnity.core.model.EventId
-import net.folivo.trixnity.core.model.RoomId
-import net.folivo.trixnity.core.model.UserId
-import net.folivo.trixnity.core.model.events.ClientEvent
-import net.folivo.trixnity.core.model.events.m.RelatesTo
-import net.folivo.trixnity.core.model.events.m.RelationType
-import net.folivo.trixnity.core.model.events.m.room.RedactionEventContent
-import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
-import net.folivo.trixnity.core.model.events.senderOrNull
+import de.connect2x.trixnity.client.room.message.react
+import de.connect2x.trixnity.client.room.message.reply
+import de.connect2x.trixnity.client.room.message.text
+import de.connect2x.trixnity.core.model.EventId
+import de.connect2x.trixnity.core.model.RoomId
+import de.connect2x.trixnity.core.model.UserId
+import de.connect2x.trixnity.core.model.events.ClientEvent
+import de.connect2x.trixnity.core.model.events.m.RelatesTo
+import de.connect2x.trixnity.core.model.events.m.RelationType
+import de.connect2x.trixnity.core.model.events.m.room.RedactionEventContent
+import de.connect2x.trixnity.core.model.events.m.room.RoomMessageEventContent
+import de.connect2x.trixnity.core.model.events.senderOrNull
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.command.Command
 import org.fuchss.matrix.bots.markdown
@@ -113,7 +113,7 @@ class ReminderCommand(
         logger.debug("Bot Reaction Message Ids: {}", botReactionMessageIds)
 
         val timer =
-            TimerManager.TimerData(
+            TimerManager.TimerData.create(
                 roomId,
                 initialMessageEventId,
                 currentMessageEventId,

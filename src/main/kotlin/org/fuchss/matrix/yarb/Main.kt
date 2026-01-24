@@ -1,18 +1,22 @@
 package org.fuchss.matrix.yarb
 
+import de.connect2x.lognity.api.backend.Backend
+import de.connect2x.lognity.backend.DefaultBackend
+import de.connect2x.trixnity.client.MatrixClient
+import de.connect2x.trixnity.client.create
+import de.connect2x.trixnity.clientserverapi.client.MatrixClientAuthProviderData
+import de.connect2x.trixnity.clientserverapi.client.classicLogin
+import de.connect2x.trixnity.clientserverapi.model.authentication.IdentifierType
+import de.connect2x.trixnity.core.model.events.m.room.RoomMessageEventContent
 import io.ktor.http.Url
 import kotlinx.coroutines.runBlocking
-import net.folivo.trixnity.client.MatrixClient
-import net.folivo.trixnity.client.fromStore
-import net.folivo.trixnity.client.login
-import net.folivo.trixnity.clientserverapi.model.authentication.IdentifierType
-import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.command.ChangeUsernameCommand
 import org.fuchss.matrix.bots.command.Command
 import org.fuchss.matrix.bots.command.HelpCommand
 import org.fuchss.matrix.bots.command.LogoutCommand
 import org.fuchss.matrix.bots.command.QuitCommand
+import org.fuchss.matrix.bots.helper.createCryptoDriverModule
 import org.fuchss.matrix.bots.helper.createMediaStoreModule
 import org.fuchss.matrix.bots.helper.createRepositoriesModule
 import org.fuchss.matrix.bots.helper.decryptMessage
@@ -26,6 +30,7 @@ import kotlin.random.Random
 private lateinit var commands: List<Command>
 
 fun main() {
+    Backend.set(DefaultBackend)
     runBlocking {
         val config = Config.load()
 
@@ -43,7 +48,7 @@ fun main() {
                 },
                 QuitCommand(config),
                 LogoutCommand(config),
-                ChangeUsernameCommand(),
+                ChangeUsernameCommand(config),
                 reminderCommand
             )
 
@@ -76,21 +81,24 @@ fun main() {
 }
 
 private suspend fun getMatrixClient(config: Config): MatrixClient {
-    val existingMatrixClient =
-        MatrixClient.fromStore(createRepositoriesModule(config), createMediaStoreModule(config)).getOrThrow()
+    val existingMatrixClient = MatrixClient.create(createRepositoriesModule(config), createMediaStoreModule(config), createCryptoDriverModule()).getOrNull()
     if (existingMatrixClient != null) {
         return existingMatrixClient
     }
 
     val matrixClient =
         MatrixClient
-            .login(
-                baseUrl = Url(config.baseUrl),
-                identifier = IdentifierType.User(config.username),
-                password = config.password,
-                repositoriesModule = createRepositoriesModule(config),
-                mediaStoreModule = createMediaStoreModule(config),
-                initialDeviceDisplayName = "${MatrixBot::class.java.`package`.name}-${Random.Default.nextInt()}"
+            .create(
+                createRepositoriesModule(config),
+                createMediaStoreModule(config),
+                createCryptoDriverModule(),
+                MatrixClientAuthProviderData
+                    .classicLogin(
+                        baseUrl = Url(config.baseUrl),
+                        identifier = IdentifierType.User(config.username),
+                        password = config.password,
+                        initialDeviceDisplayName = "${MatrixBot::class.java.`package`.name}-${Random.Default.nextInt()}"
+                    ).getOrThrow()
             ).getOrThrow()
 
     return matrixClient
