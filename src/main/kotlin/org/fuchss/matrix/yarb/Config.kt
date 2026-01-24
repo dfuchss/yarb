@@ -21,14 +21,14 @@ import java.io.File
  * @param[offsetInMinutes] the offset for reminders in minutes. E.g. "5" means that the reminder will be sent 5 minutes before the actual time
  */
 data class Config(
-    @JsonProperty override val prefix: String = "yarb",
-    @JsonProperty override val baseUrl: String,
-    @JsonProperty override val username: String,
-    @JsonProperty override val password: String,
-    @JsonProperty override val dataDirectory: String,
-    @JsonProperty override val admins: List<String>,
-    @JsonProperty override val users: List<String> = listOf(),
-    @JsonProperty("offset_in_minutes") val offsetInMinutes: Long = 0
+    @param:JsonProperty override val prefix: String = "yarb",
+    @param:JsonProperty override val baseUrl: String,
+    @param:JsonProperty override val username: String,
+    @param:JsonProperty override val password: String,
+    @param:JsonProperty override val dataDirectory: String,
+    @param:JsonProperty override val admins: List<String>,
+    @param:JsonProperty override val users: List<String> = listOf(),
+    @param:JsonProperty("offset_in_minutes") val offsetInMinutes: Long = 0
 ) : IConfig {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(Config::class.java)
