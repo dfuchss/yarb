@@ -45,7 +45,8 @@ class TimerManager(
     init {
         val timerFile = File(timerFileLocation)
         if (timerFile.exists()) {
-            val timersFromFile: List<TimerData> = objectMapper.readValue(timerFile)
+            val timerData = timerFile.readText(Charsets.UTF_8)
+            val timersFromFile: List<TimerData> = objectMapper.readValue(timerData)
             timers.addAll(timersFromFile)
         }
     }
