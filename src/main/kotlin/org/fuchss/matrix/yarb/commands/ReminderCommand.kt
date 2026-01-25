@@ -130,7 +130,7 @@ class ReminderCommand(
         emojiToMessage: Map<String, String>
     ): String {
         if (emojiToMessage.size == 1) {
-            return "I'll remind all people that react '${TimerManager.DEFAULT_REACTION}' at $time: '${emojiToMessage.values.first()}'"
+            return "I'll remind all people that react '${emojiToMessage.keys.first()}' at $time: '${emojiToMessage.values.first()}'"
         }
 
         val header = "I'll remind all people at $time.\n\n"
