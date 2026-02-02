@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.emoji
-import org.fuchss.matrix.bots.markdown
-import org.fuchss.matrix.bots.matrixTo
+import org.fuchss.matrix.bots.helper.markdown
+import org.fuchss.matrix.bots.helper.matrixTo
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files

@@ -46,9 +46,9 @@ fun main() {
                 HelpCommand(config, "YARB") {
                     commands
                 },
-                QuitCommand(config),
-                LogoutCommand(config),
-                ChangeUsernameCommand(config),
+                QuitCommand(),
+                LogoutCommand(),
+                ChangeUsernameCommand(),
                 reminderCommand
             )
 

@@ -14,7 +14,7 @@ import de.connect2x.trixnity.core.model.events.m.room.RoomMessageEventContent
 import de.connect2x.trixnity.core.model.events.senderOrNull
 import org.fuchss.matrix.bots.MatrixBot
 import org.fuchss.matrix.bots.command.Command
-import org.fuchss.matrix.bots.markdown
+import org.fuchss.matrix.bots.helper.markdown
 import org.fuchss.matrix.yarb.Config
 import org.fuchss.matrix.yarb.TimerManager
 import org.fuchss.matrix.yarb.getMessageId
