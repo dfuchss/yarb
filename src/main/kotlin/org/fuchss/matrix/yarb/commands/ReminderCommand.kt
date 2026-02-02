@@ -53,64 +53,12 @@ class ReminderCommand(
         currentMessageEventId: EventId,
         initialMessageEventId: EventId
     ) {
-        val timeXmessage = parameters.split(" ", "\n", limit = 2)
-        if (timeXmessage.size != 2) {
-            matrixBot.room().sendMessage(roomId) { text("Time not found. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
-            return
-        }
-        if (!TIME_REGEX.matches(timeXmessage[0])) {
-            matrixBot.room().sendMessage(roomId) { text("Invalid time format. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
-            return
-        }
+        val (time, message) = extractTimeAndMessage(matrixBot, roomId, parameters) ?: return
+        logger.debug("Reminder for {} with '{}'", time, message)
+        val emojiToMessage = parseEmojiToMessage(message)
 
-        val time = LocalTime.parse(timeXmessage[0]).withSecond(0).minusMinutes(config.offsetInMinutes)
-        val now = LocalTime.now()
-        if (now.isAfter(time)) {
-            matrixBot
-                .room()
-                .sendMessage(roomId) {
-                    text(
-                        "Time $time is in the past. I can only remind you at the same day :) Also remember that I'll inform you ${config.offsetInMinutes} min before :)"
-                    )
-                }
-            return
-        }
-
-        logger.debug("Reminder for {} with '{}'", time, timeXmessage[1])
-
-        val emojiToMessage = parseEmojiToMessage(timeXmessage[1])
-
-        val botMessageTransactionId =
-            matrixBot.room().sendMessage(roomId) {
-                reply(initialMessageEventId, null)
-                val message = createReminderMessage(time, emojiToMessage)
-                markdown(message)
-            }
-        logger.debug("Bot Message TransactionId: {}", botMessageTransactionId)
-        val botMessageId = matrixBot.room().getMessageId(roomId, botMessageTransactionId)
-        if (botMessageId == null) {
-            logger.error("Could not send bot message :( -- TransactionId: {}", botMessageTransactionId)
-            return
-        }
-        logger.debug("Bot Message Id: {}", botMessageId)
-
-        val botReactionMessageTransactionIds =
-            emojiToMessage.map {
-                matrixBot.room().sendMessage(roomId) {
-                    react(botMessageId, it.key)
-                }
-            }
-        logger.debug("Bot Reaction Message TransactionIds: {}", botReactionMessageTransactionIds)
-        val botReactionMessageIds = botReactionMessageTransactionIds.map { matrixBot.room().getMessageId(roomId, it) }
-        if (botReactionMessageIds.any { it == null }) {
-            logger.error("Could not send bot reaction message :( -- TransactionIds: {}", botReactionMessageTransactionIds)
-            matrixBot.roomApi().redactEvent(roomId, botMessageId).getOrNull()
-            matrixBot.room().sendMessage(roomId) {
-                text("Run into server rate limits. Please use less emojis :/")
-            }
-            return
-        }
-        logger.debug("Bot Reaction Message Ids: {}", botReactionMessageIds)
+        val botMessageId = sendReminderMessage(matrixBot, roomId, initialMessageEventId, time, emojiToMessage) ?: return
+        val botReactionMessageIds = createBotReactions(matrixBot, roomId, botMessageId, emojiToMessage) ?: return
 
         val timer =
             TimerManager.TimerData.create(
@@ -123,6 +71,83 @@ class ReminderCommand(
                 emojiToMessage
             )
         timerManager.addTimer(timer)
+    }
+
+    private suspend fun createBotReactions(
+        matrixBot: MatrixBot,
+        roomId: RoomId,
+        botMessageId: EventId,
+        emojiToMessage: Map<String, String>
+    ): List<EventId?>? {
+        val botReactionMessageTransactionIds =
+            emojiToMessage.map {
+                matrixBot.room().sendMessage(roomId) {
+                    react(botMessageId, it.key)
+                }
+            }
+
+        val botReactionMessageIds = botReactionMessageTransactionIds.map { matrixBot.room().getMessageId(roomId, it) }
+        if (botReactionMessageIds.any { it == null }) {
+            logger.error("Could not send bot reaction message :( -- TransactionIds: {}", botReactionMessageTransactionIds)
+            matrixBot.roomApi().redactEvent(roomId, botMessageId).getOrNull()
+            matrixBot.room().sendMessage(roomId) {
+                text("Run into server rate limits. Please use less emojis :/")
+            }
+            return null
+        }
+        return botReactionMessageIds
+    }
+
+    private suspend fun sendReminderMessage(
+        matrixBot: MatrixBot,
+        roomId: RoomId,
+        initialMessageEventId: EventId,
+        time: LocalTime,
+        emojiToMessage: Map<String, String>
+    ): EventId? {
+        val botMessageTransactionId =
+            matrixBot.room().sendMessage(roomId) {
+                reply(initialMessageEventId, null)
+                val message = createReminderMessage(time, emojiToMessage)
+                markdown(message)
+            }
+
+        val botMessageId = matrixBot.room().getMessageId(roomId, botMessageTransactionId)
+        if (botMessageId == null) {
+            logger.error("Could not send bot message :( -- TransactionId: {}", botMessageTransactionId)
+        }
+        return botMessageId
+    }
+
+    private suspend fun extractTimeAndMessage(
+        matrixBot: MatrixBot,
+        roomId: RoomId,
+        parameters: String
+    ): Pair<LocalTime, String>? {
+        val timeXmessage = parameters.split(" ", "\n", limit = 2)
+        if (timeXmessage.size != 2) {
+            matrixBot.room().sendMessage(roomId) { text("Time not found. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
+            return null
+        }
+        if (!TIME_REGEX.matches(timeXmessage[0])) {
+            matrixBot.room().sendMessage(roomId) { text("Invalid time format. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
+            return null
+        }
+
+        val time = LocalTime.parse(timeXmessage[0]).withSecond(0).minusMinutes(config.offsetInMinutes)
+        val now = LocalTime.now()
+        if (now.isAfter(time)) {
+            matrixBot
+                .room()
+                .sendMessage(roomId) {
+                    text(
+                        "Time $time is in the past. I can only remind you at the same day :) Also remember that I'll inform you ${config.offsetInMinutes} min before :)"
+                    )
+                }
+            return null
+        }
+
+        return time to timeXmessage[1]
     }
 
     private fun createReminderMessage(
