@@ -7,6 +7,7 @@ This bot can be used to create reminders for a specific time at a day.
 * Create reminders for a specific time at the current day.
 * Change display name per room
 * Configure an offset for the reminder time
+* Configure a default message
 * Simple rights management (same as for my other bots)
 
 ![Functions](.docs/images/functions.png)
@@ -61,7 +62,7 @@ The bot is configured through a JSON configuration file. Copy `config-sample.jso
 }
 ```
 
-**Restricted configuration (only specific servers allowed, with 5-minute early reminders):**
+**Restricted configuration (only specific servers allowed, with 5-minute early reminders and optional default message):**
 ```json
 {
     "prefix": "remind",
@@ -71,7 +72,8 @@ The bot is configured through a JSON configuration file. Copy `config-sample.jso
     "dataDirectory": "/path/to/bot/data/",
     "admins": ["@admin1:your-server.com", "@admin2:your-server.com"],
     "users": [":your-server.com", ":trusted-server.org"],
-    "offset_in_minutes": 5
+    "offset_in_minutes": 5,
+    "default_message": "This is your reminder!"
 }
 ```
 
@@ -85,7 +87,8 @@ The bot is configured through a JSON configuration file. Copy `config-sample.jso
 
 * An admin can invite the bot to an *unencrypted* room. If the room has enabled encryption or if the invite was not sent by an admin, the bot ignores it (without logging it)
 * After the bot has joined use `!yarb help` to get an overview about the features of the bot (remember: the bot only respond to users)
-* In order to create a new reminder use `!yarb <time> <message>`. The time has to be in the format `HH:mm` (e.g., `!yarb 12:00 Lunch time!`).
+* In order to create a new reminder use `!yarb <time> <message>`. The time has to be in the format `H:mm` (e.g., `!yarb 12:00 Lunch time!` or `!yarb 9:00 Coffee break!`).
+* If you have configured a default message, the format `!yarb <time>` is also accepted; the default message will be used in that case.
 * You can configure the bot name in the `config.json` 
 
 ### Advanced: Multi-Option Polls with Reminders

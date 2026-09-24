@@ -151,12 +151,6 @@ class ReminderCommand(
             matrixBot.room().sendMessage(roomId) { text("Invalid time format. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
             return null
         }
-        // Keep the line structure of the message. Only the lines below the command may contain the options of a poll.
-        val message = parameters.drop(timeText.length).removePrefix(" ")
-        if (message.isBlank()) {
-            matrixBot.room().sendMessage(roomId) { text("Message not found. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
-            return null
-        }
 
         val formatter = DateTimeFormatter.ofPattern("H:mm")
         val time = LocalTime.parse(timeText, formatter).withSecond(0).minusMinutes(config.offsetInMinutes)
@@ -170,6 +164,17 @@ class ReminderCommand(
                     )
                 }
             return null
+        }
+
+        // Keep the line structure of the message. Only the lines below the command may contain the options of a poll.
+        var message = parameters.drop(timeText.length).removePrefix(" ")
+        if (message.isBlank()) {
+            if (config.defaultMessage.isNullOrBlank()) {
+                matrixBot.room().sendMessage(roomId) { text("Message not found. Please use commands like '!${config.prefix} 09:00 Time to Work!'") }
+                return null
+            } else {
+                message = config.defaultMessage
+            }
         }
 
         return time to message
